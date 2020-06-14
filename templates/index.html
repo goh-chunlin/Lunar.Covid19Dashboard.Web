@@ -1,0 +1,247 @@
+<!doctype html>
+<!--
+  Material Design Lite
+  Copyright 2015 Google Inc. All rights reserved.
+
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+      https://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License
+-->
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="description" content="A front-end template that helps you build fast, modern mobile web apps.">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
+    <title>COVID-19 Map: Tracking the coronavirus outbreak worldwide</title>
+
+    <!-- Add to homescreen for Chrome on Android -->
+    <meta name="mobile-web-app-capable" content="yes">
+    <link rel="icon" sizes="192x192" href="https://getmdl.io/templates/article/images/android-desktop.png">
+
+    <!-- Add to homescreen for Safari on iOS -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="apple-mobile-web-app-title" content="Material Design Lite">
+    <link rel="apple-touch-icon-precomposed" href="https://getmdl.io/templates/article/images/ios-desktop.png">
+
+    <!-- Tile icon for Win8 (144x144 + tile color) -->
+    <meta name="msapplication-TileImage" content="public/images/touch/ms-touch-icon-144x144-precomposed.png">
+    <meta name="msapplication-TileColor" content="#3372DF">
+
+    <link rel="shortcut icon" href="https://getmdl.io/templates/article/images/favicon.png">
+
+    <!-- SEO: If your mobile URL is different from the desktop URL, add a canonical link to the desktop page https://developers.google.com/webmasters/smartphone-sites/feature-phones -->
+    <!--
+    <link rel="canonical" href="http://www.example.com/">
+    -->
+
+    <link rel="stylesheet"
+        href="https://fonts.googleapis.com/css?family=Roboto:regular,bold,italic,thin,light,bolditalic,black,medium&amp;lang=en">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    <link rel="stylesheet" href="https://code.getmdl.io/1.3.0/material.teal-red.min.css">
+    <link rel="stylesheet" href="https://getmdl.io/templates/article/styles.css">
+    <style>
+        #view-source {
+            position: fixed;
+            display: block;
+            right: 0;
+            bottom: 0;
+            margin-right: 40px;
+            margin-bottom: 40px;
+            z-index: 900;
+        }
+    </style>
+
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+
+    <script>
+        var statisticsOfPlaces = [];
+        var statisticsOfSingapore = [];
+        var statisticsOfMalaysia = [];
+
+        statisticsOfPlaces.push(['Lat', 'Lng', 'Location', 'Confirmed Cases']);
+        statisticsOfSingapore.push(['Date', 'Confirmed Cases', 'Deaths']);
+        statisticsOfMalaysia.push(['Date', 'Confirmed Cases', 'Deaths']);
+
+        {{ range .AllCountries }}
+            statisticsOfPlaces.push([parseFloat('{{ .Latitude }}'), parseFloat('{{ .Longitude }}'), '{{ .CountryRegion }}', parseInt('{{ .ConfirmedCases }}')]);
+        {{ end }}
+
+        {{ range .SingaporeCases }}
+            statisticsOfSingapore.push(['{{ .Date }}', parseInt('{{ .ConfirmedCases }}'), parseInt('{{ .Deaths }}')]);
+        {{ end }}
+
+        {{ range .MalaysiaCases }}
+            statisticsOfMalaysia.push(['{{ .Date }}', parseInt('{{ .ConfirmedCases }}'), parseInt('{{ .Deaths }}')]);
+        {{ end }}
+
+        google.charts.load('current', {
+            'packages': ['geochart', 'corechart'],
+            'mapsApiKey': 'AIzaSyAbvlTTO85mY91mXOfPnJ-Z-GRg62Syxgc'
+        });
+
+        google.charts.setOnLoadCallback(drawMapAndCharts);
+    
+        function drawMapAndCharts() {
+            var globalData = google.visualization.arrayToDataTable(statisticsOfPlaces);
+    
+            var mapOptions = {
+                showTooltip: true,
+                showInfoWindow: true,
+                colorAxis: {colors: ['blue', 'red']}
+            };
+        
+            var map = new google.visualization.GeoChart(document.getElementById('chart_map'));
+        
+            map.draw(globalData, mapOptions);
+
+            var singaporeData = google.visualization.arrayToDataTable(statisticsOfSingapore);
+
+            var singaporeChartOptions = {
+                title: 'COVID-19 in Singapore',
+                legend: { position: 'bottom' }
+            };
+
+            var singaporeChart = new google.visualization.LineChart(document.getElementById('chart_singapore'));
+
+            singaporeChart.draw(singaporeData, singaporeChartOptions);
+
+            var malaysiaData = google.visualization.arrayToDataTable(statisticsOfMalaysia);
+
+            var malaysiaChartOption = {
+                title: 'COVID-19 in Malaysia',
+                legend: { position: 'bottom' }
+            };
+
+            var malaysiaChart = new google.visualization.LineChart(document.getElementById('chart_malaysia'));
+
+            malaysiaChart.draw(malaysiaData, malaysiaChartOption);
+        };
+      </script>
+</head>
+
+<body>
+    <div class="demo-layout mdl-layout mdl-layout--fixed-header mdl-js-layout mdl-color--grey-100">
+        <header class="demo-header mdl-layout__header mdl-layout__header--scroll mdl-color--blue mdl-color-text--white-800">
+            <div class="mdl-layout__header-row">
+                <span class="mdl-layout-title">COVID-19 Dashboard from Google BigQuery</span>
+                <div class="mdl-layout-spacer"></div>
+                <div class="mdl-textfield mdl-js-textfield mdl-textfield--expandable">
+                    <label class="mdl-button mdl-js-button mdl-button--icon" for="search">
+                        <i class="material-icons">search</i>
+                    </label>
+                    <div class="mdl-textfield__expandable-holder">
+                        <input class="mdl-textfield__input" type="text" id="search">
+                        <label class="mdl-textfield__label" for="search">Enter your query...</label>
+                    </div>
+                </div>
+            </div>
+        </header>
+        <div class="demo-ribbon" style="background-image: url('https://theleaders-online.com/wp-content/uploads/2020/05/2d910dfaa1671b17029589e7c430d34f37780776-1.jpg');"></div>
+        <main class="demo-main mdl-layout__content">
+            <div class="demo-container mdl-grid">
+                <div class="mdl-cell mdl-cell--2-col mdl-cell--hide-tablet mdl-cell--hide-phone"></div>
+                <div
+                    class="demo-content mdl-color--white mdl-shadow--4dp content mdl-color-text--grey-800 mdl-cell mdl-cell--8-col">
+                    <div class="demo-crumbs mdl-color-text--grey-500">
+                        Google BigQuery &gt; Johns Hopkins University (JHU) &gt; Center for Systems Science and Engineering (CSSE) &gt; COVID-19 Dataset
+                    </div>
+
+                    <h3>COVID-19</h3>
+                    <p>
+                        To aid researchers, data scientists, and analysts in an effort to combat COVID-19, Google is hosting 
+                        a repository of public datasets like Johns Hopkins Center for Systems Science and Engineering 
+                        (JHU CSSE), the US Census Bureau's American Community Survey (ACS), and OpenStreetMaps data free to 
+                        access and analyze through the COVID-19 Public Dataset Program.
+                    </p>
+
+                    <!-- Accent-colored raised button -->
+                    <a class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored" target="_blank"
+                        href="https://console.cloud.google.com/marketplace/details/bigquery-public-datasets/covid19-dataset-list">
+                        About BigQuery COVID-19 Public Datasets
+                    </a>
+
+                    <h3>Bookmarks</h3>
+                    <div style="margin-bottom: 40px;">
+                        <span class="mdl-chip mdl-chip--contact">
+                            <img class="mdl-chip__contact" src="https://www.brandeps.com/icon-download/S/Singapore-icon-vector-01.svg"></img>
+                            <span class="mdl-chip__text">Confirmed Cases: {{ .SingaporeConfirmedCases }}</span>
+                        </span>
+                        <span class="mdl-chip mdl-chip--contact mdl-color--red mdl-color-text--white">
+                            <img class="mdl-chip__contact" src="https://www.brandeps.com/icon-download/S/Singapore-icon-vector-01.svg"></img>
+                            <span class="mdl-chip__text">Deaths: {{ .SingaporeDeaths }}</span>
+                        </span>
+
+                        <div id="chart_singapore"></div>
+                    </div>
+                    <div style="margin-bottom: 40px;">
+                        <span class="mdl-chip mdl-chip--contact">
+                            <img class="mdl-chip__contact" src="https://www.brandeps.com/icon-download/M/Malaysia-icon-vector-01.svg"></img>
+                            <span class="mdl-chip__text">Confirmed Cases: {{ .MalaysiaConfirmedCases }}</span>
+                        </span>
+                        <span class="mdl-chip mdl-chip--contact mdl-color--red mdl-color-text--white">
+                            <img class="mdl-chip__contact" src="https://www.brandeps.com/icon-download/M/Malaysia-icon-vector-01.svg"></img>
+                            <span class="mdl-chip__text">Deaths: {{ .MalaysiaDeaths }}</span>
+                        </span>
+
+                        <div id="chart_malaysia"></div>
+                    </div>
+                    
+                    <h3>Top 10</h3>
+                    <table class="mdl-data-table mdl-js-data-table" style="width: 100%;">
+                        <thead>
+                            <tr>
+                                <th class="mdl-data-table__cell--non-numeric">Country / Region</th>
+                                <th class="mdl-data-table__header--sorted-descending">Confirmed Cases</th>
+                                <th>Deaths</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {{ range .TopCountries }}
+                                <tr>
+                                    {{ if (eq .Place "" ) }}
+                                        <td class="mdl-data-table__cell--non-numeric">{{ .CountryRegion }}</td>
+                                    {{ else }}
+                                        <td class="mdl-data-table__cell--non-numeric">{{ .Place }}</td>
+                                    {{ end }}
+                                    <td>{{ .ConfirmedCases }}</td>
+                                    <td>{{ .Deaths }}</td>
+                                </tr>
+                            {{ end }}
+                        </tbody>
+                    </table>
+                    
+
+                    <h3>Global Situation</h3>
+                    <div id="chart_map"></div>
+                </div>
+            </div>
+            <footer class="demo-footer mdl-mini-footer">
+                <div class="mdl-mini-footer--left-section">
+                    <ul class="mdl-mini-footer--link-list">
+                        <li><a href="#">Help</a></li>
+                        <li><a href="#">Privacy and Terms</a></li>
+                        <li><a href="#">User Agreement</a></li>
+                    </ul>
+                </div>
+            </footer>
+        </main>
+    </div>
+    <a href="https://github.com/google/material-design-lite/blob/mdl-1.x/templates/article/" target="_blank"
+        id="view-source"
+        class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-color--accent mdl-color-text--accent-contrast">View
+        Source</a>
+    <script src="https://code.getmdl.io/1.3.0/material.min.js"></script>
+</body>
+
+</html>
